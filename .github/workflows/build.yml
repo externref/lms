@@ -3,7 +3,7 @@ name: Build and Release Binaries with Meson
 on:
   push:
     branches:
-      - main
+      - master
   release:
     types: [created]
 
