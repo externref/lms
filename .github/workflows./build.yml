@@ -1,0 +1,46 @@
+name: Build binaries with Meson
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    name: Build binaries for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        include:
+          - os: ubuntu-latest
+            meson_setup: 'meson setup builddir --buildtype=release'
+            meson_build: 'meson compile -C builddir'
+            install_deps: 'sudo apt update && sudo apt install -y ninja-build pkg-config'
+          - os: windows-latest
+            meson_setup: 'meson setup builddir --buildtype=release'
+            meson_build: 'meson compile -C builddir'
+            install_deps: 'choco install -y ninja pkg-config meson'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Install dependencies
+        run: ${{ matrix.install_deps }}
+
+      - name: Set up Meson build system
+        run: ${{ matrix.meson_setup }}
+
+      - name: Build binary
+        run: ${{ matrix.meson_build }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.os }}-binary
+          path: builddir/
