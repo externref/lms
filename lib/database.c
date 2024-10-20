@@ -4,16 +4,17 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define string char *
+#define string char*
 #define BOOK_LIMIT 1000
 #define USER_LIMIT 1000
 
-struct Book {
+struct Book{
   int id;
   string name;
   string category;
   string author;
   int year;
+  int borrowed;
 };
 
 struct User {
@@ -49,7 +50,6 @@ static int load_books_callback(void *NotUsed, int argc, char **argv,
   books[total_books].year = atoi(argv[4]);
   total_books++;
 
-  printf("%s\n", books[total_books - 1].name);
   return 0;
 }
 
@@ -171,20 +171,26 @@ void merge_sort(struct Book arr[], int left, int right, char *sort_by) {
 }
 
 struct Book *d_get_books(char *query, char *sort_by) {
-  struct Book *f_books = malloc(BOOK_LIMIT * sizeof(struct Book));
-  int count = 0;
-
-  for (int i = 0; i < total_books; i++) {
-    if (query == NULL || (strlen(query) > 0 &&
-                          starts_with_case_insensitive(books[i].name, query))) {
-      f_books[count] = books[i];
-      count++;
+    if (query[0]=='~'){
+	return books;
     }
-  }
+    struct Book *f_books = malloc((BOOK_LIMIT + 1) * sizeof(struct Book));  // Extra space for sentinel
+    int count = 0;
 
-  if (count > 0) {
-    merge_sort(f_books, 0, count - 1, sort_by);
-  }
+    for (int i = 0; i < total_books; i++) {
+        if (query == NULL || (strlen(query) > 0 &&
+                              starts_with_case_insensitive(books[i].name, query))) {
+            f_books[count] = books[i];
+            count++;
+        }
+    }
 
-  return f_books;
+    f_books[count].name = NULL;
+
+    if (count > 0) {
+        merge_sort(f_books, 0, count - 1, sort_by);
+    }
+
+    return f_books;
 }
+

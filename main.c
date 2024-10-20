@@ -12,5 +12,6 @@ int main(int argc, char **argv) {
   g_object_unref(application);
 
   sqlite3_close(db);
-  free(db);
+  return status;
 }
+ 
